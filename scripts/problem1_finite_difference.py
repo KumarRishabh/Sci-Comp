@@ -11,6 +11,10 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from scipy.linalg import solve_banded
+from project_paths import ensure_problem_figure_dir, relative_to_root
+
+
+FIGURES_DIR = ensure_problem_figure_dir("problem1")
 
 # ─── helper: assemble and solve the tridiagonal system ───────────────────────
 
@@ -123,8 +127,9 @@ axes[1].legend()
 axes[1].grid(True)
 
 plt.tight_layout()
-plt.savefig('problem1_manufactured_solution.png', dpi=120)
-print("\nSaved: problem1_manufactured_solution.png")
+manufactured_solution_path = FIGURES_DIR / "manufactured_solution.png"
+plt.savefig(manufactured_solution_path, dpi=120)
+print(f"\nSaved: {relative_to_root(manufactured_solution_path)}")
 
 
 # ─── (d) f(x) = 1 ─────────────────────────────────────────────────────────────
@@ -144,8 +149,9 @@ ax2.set_ylabel('u(x)')
 ax2.set_title(r"Solution of $-(a(x)u')' + c(x)u = 1$, $a=1+x^2$, $c=e^x$")
 ax2.grid(True)
 plt.tight_layout()
-plt.savefig('problem1_f_equals_1.png', dpi=120)
-print("Saved: problem1_f_equals_1.png")
+f_equals_one_path = FIGURES_DIR / "f_equals_1.png"
+plt.savefig(f_equals_one_path, dpi=120)
+print(f"Saved: {relative_to_root(f_equals_one_path)}")
 
 # Basic sanity checks: solution should be non-negative (since f≥0, c≥0, a>0)
 print(f"\nMin of numerical solution with f=1: {v_full.min():.6f}  (should be ≥ 0)")

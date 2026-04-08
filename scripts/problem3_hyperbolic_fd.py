@@ -19,6 +19,10 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from scipy.linalg import solve_banded
+from project_paths import ensure_problem_figure_dir, relative_to_root
+
+
+FIGURES_DIR = ensure_problem_figure_dir("problem3")
 
 
 # ─── Problem setup ────────────────────────────────────────────────────────────
@@ -241,8 +245,9 @@ while panel < len(axes):
 plt.suptitle(f'All FD schemes: $u_t+u_x=0$,  $h={h}$,  $\\lambda={lm}$,  $T={T}$',
              fontsize=12)
 plt.tight_layout()
-plt.savefig('problem3_all_schemes.png', dpi=100)
-print("Saved: problem3_all_schemes.png")
+all_schemes_path = FIGURES_DIR / "all_schemes.png"
+plt.savefig(all_schemes_path, dpi=100)
+print(f"Saved: {relative_to_root(all_schemes_path)}")
 
 
 # ─── Convergence study: FTBS and Lax-Wendroff ─────────────────────────────────
@@ -300,5 +305,6 @@ for col, lm_test in enumerate([0.8, 1.1]):
 
 plt.suptitle('Stability comparison: FTBS vs FTCS', fontsize=12)
 plt.tight_layout()
-plt.savefig('problem3_stability.png', dpi=100)
-print("Saved: problem3_stability.png")
+stability_path = FIGURES_DIR / "stability.png"
+plt.savefig(stability_path, dpi=100)
+print(f"Saved: {relative_to_root(stability_path)}")

@@ -28,6 +28,10 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from scipy.linalg import solve_banded
+from project_paths import ensure_problem_figure_dir, relative_to_root
+
+
+FIGURES_DIR = ensure_problem_figure_dir("problem4")
 
 
 # ─── (a) Exact traveling wave solution ───────────────────────────────────────
@@ -200,8 +204,9 @@ axes[1].set_title(f'Pointwise error (max = {err_ref:.2e})')
 axes[1].grid(True)
 
 plt.tight_layout()
-plt.savefig('problem4_traveling_wave.png', dpi=120)
-print("Saved: problem4_traveling_wave.png")
+traveling_wave_path = FIGURES_DIR / "traveling_wave.png"
+plt.savefig(traveling_wave_path, dpi=120)
+print(f"Saved: {relative_to_root(traveling_wave_path)}")
 
 
 # ─── Convergence study ────────────────────────────────────────────────────────
@@ -234,8 +239,9 @@ ax3.set_xlabel('$h = k$'); ax3.set_ylabel('Max error')
 ax3.set_title('CNLF convergence: viscous Burgers\' (traveling wave)')
 ax3.legend(); ax3.grid(True)
 plt.tight_layout()
-plt.savefig('problem4_convergence.png', dpi=120)
-print("Saved: problem4_convergence.png")
+convergence_path = FIGURES_DIR / "convergence.png"
+plt.savefig(convergence_path, dpi=120)
+print(f"Saved: {relative_to_root(convergence_path)}")
 
 
 # ─── (c) Burgers' on (-1,1) with u(±1,t)=0,  u(x,0)=-sin(πx) ────────────────
@@ -287,5 +293,6 @@ ax2.set_xlabel('$x$'); ax2.set_ylabel('$u(x,t)$')
 ax2.set_title(f"Burgers' on $(-1,1)$:  $\\varepsilon={eps_c}$,  $k=h={k_c}$,  $T={T_c}$")
 ax2.legend(fontsize=9); ax2.grid(True)
 plt.tight_layout()
-plt.savefig('problem4_burgers_sine.png', dpi=120)
-print("Saved: problem4_burgers_sine.png")
+burgers_sine_path = FIGURES_DIR / "burgers_sine.png"
+plt.savefig(burgers_sine_path, dpi=120)
+print(f"Saved: {relative_to_root(burgers_sine_path)}")

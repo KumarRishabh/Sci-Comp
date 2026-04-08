@@ -42,6 +42,10 @@ import numpy as np
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+from project_paths import ensure_problem_figure_dir, relative_to_root
+
+
+FIGURES_DIR = ensure_problem_figure_dir("problem2")
 
 
 # ─── Exact solution (FFT-based, exact for given periodic grid) ───────────────
@@ -127,8 +131,9 @@ for ax, (alpha, beta, title) in zip(axes, cases):
 
 plt.suptitle(r'$u_t + u_x = \alpha u_{xx} - \beta u_{xxx}$,  $a=1$', fontsize=13)
 plt.tight_layout()
-plt.savefig('problem2_dissipation_dispersion.png', dpi=120)
-print("Saved: problem2_dissipation_dispersion.png")
+dissipation_dispersion_path = FIGURES_DIR / "dissipation_dispersion.png"
+plt.savefig(dissipation_dispersion_path, dpi=120)
+print(f"Saved: {relative_to_root(dissipation_dispersion_path)}")
 
 
 # ─── Convergence: spatial (vary N, fixed tiny dt) ────────────────────────────
@@ -192,8 +197,9 @@ axes2[1].grid(True)
 
 plt.suptitle('Convergence of CN-FD for dissipation-dispersion PDE', fontsize=12)
 plt.tight_layout()
-plt.savefig('problem2_convergence_fd.png', dpi=120)
-print("Saved: problem2_convergence_fd.png")
+convergence_fd_path = FIGURES_DIR / "convergence_fd.png"
+plt.savefig(convergence_fd_path, dpi=120)
+print(f"Saved: {relative_to_root(convergence_fd_path)}")
 
 
 # ─── Additional: temporal convergence using spectral (exact) spatial operator
@@ -242,5 +248,6 @@ axes3[1].set_title('Temporal convergence (CN, 2nd order)'); axes3[1].legend(); a
 
 plt.suptitle('Second-order convergence: space and time', fontsize=12)
 plt.tight_layout()
-plt.savefig('problem2_convergence_spectral.png', dpi=120)
-print("Saved: problem2_convergence_spectral.png")
+convergence_spectral_path = FIGURES_DIR / "convergence_spectral.png"
+plt.savefig(convergence_spectral_path, dpi=120)
+print(f"Saved: {relative_to_root(convergence_spectral_path)}")
