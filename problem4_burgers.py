@@ -19,6 +19,8 @@ Equivalently:               u_t + (1/2)(u^2)_x = eps u_xx
       v_m^{n+1} - mu*delta^2_x v^{n+1}
         = v_m^{n-1} + mu*delta^2_x v^{n-1}
           - k/(2h) * [(v_{m+1}^n)^2 - (v_{m-1}^n)^2]
+
+(c) TODO
 """
 
 import numpy as np
