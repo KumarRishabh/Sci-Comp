@@ -15,7 +15,10 @@ Scientific computation coursework and experiments, organized by artifact type an
 - `scripts/problem3_hyperbolic_fd.py`
 - `scripts/problem4_burgers.py`
 - `scripts/project_paths.py`: shared path helpers for consistent figure output.
+- `notebooks/problem1_finite_difference.ipynb`
+- `notebooks/problem2_dissipation_dispersion.ipynb`
 - `notebooks/problem3_hyperbolic_fd.ipynb`
+- `notebooks/problem4_burgers.ipynb`
 
 ## Running the scripts
 
