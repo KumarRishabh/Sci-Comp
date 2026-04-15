@@ -1,0 +1,5 @@
+# This file is used internally by FFMPEG.
+file 'file:/Users/rishabhkumar/Sci-Comp/notebooks/media/videos/notebooks/720p30/partial_movie_files/BurgersTravellingWave/122916032_2394016351_223132457.mp4'
+file 'file:/Users/rishabhkumar/Sci-Comp/notebooks/media/videos/notebooks/720p30/partial_movie_files/BurgersTravellingWave/3288007914_1269751190_1921356502.mp4'
+file 'file:/Users/rishabhkumar/Sci-Comp/notebooks/media/videos/notebooks/720p30/partial_movie_files/BurgersTravellingWave/3288007914_2351901206_2038441920.mp4'
+file 'file:/Users/rishabhkumar/Sci-Comp/notebooks/media/videos/notebooks/720p30/partial_movie_files/BurgersTravellingWave/3288007914_548731573_1266898483.mp4'
