@@ -1,0 +1,416 @@
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,mathtools}
+\usepackage{booktabs}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.55em}
+\renewcommand{\arraystretch}{1.15}
+
+\newcommand{\Oh}{\mathcal{O}}
+\newcommand{\eoc}{\mathrm{EOC}}
+\newcommand{\norm}[1]{\left\lVert #1\right\rVert}
+
+\title{Local Truncation Error Handout\\
+Finite Difference Methods for $u_t+a u_x=0$}
+\author{Rishabh Kumar}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section{Setup}
+
+We consider
+\begin{equation}
+    u_t+a u_x=0,\qquad a>0,
+\end{equation}
+on the grid
+\begin{equation}
+    x_m=-2+mh,\qquad t_n=nk,\qquad
+    v_m^n\approx u(x_m,t_n),
+\end{equation}
+with
+\begin{equation}
+    \lambda=\frac{k}{h},\qquad \nu=a\lambda=\frac{ak}{h}.
+\end{equation}
+For the assignment $a=1$, so $\nu=\lambda$.
+
+\section{Discrete Error Norms}
+
+At the final time $T=t_N$, define the grid error
+\begin{equation}
+    e_m^N=v_m^N-u(x_m,T).
+\end{equation}
+The numerical experiments use the following discrete norms:
+\begin{align}
+    E_1
+    &=
+    h\sum_m |e_m^N|,
+    \\
+    E_2
+    &=
+    \left(h\sum_m |e_m^N|^2\right)^{1/2},
+    \\
+    E_\infty
+    &=
+    \max_m |e_m^N|.
+\end{align}
+The first two are discrete analogues of the continuous $L^1$ and $L^2$ norms:
+\begin{equation}
+    \norm{e(\cdot,T)}_{L^1}
+    =
+    \int |e(x,T)|\,dx,
+    \qquad
+    \norm{e(\cdot,T)}_{L^2}
+    =
+    \left(\int |e(x,T)|^2\,dx\right)^{1/2}.
+\end{equation}
+The maximum norm $E_\infty$ measures the worst pointwise error.  It is therefore more
+sensitive to localized oscillations or errors near nonsmooth corners.
+
+The experimental order of convergence between two successive meshes $h$ and $h/2$ is
+\begin{equation}
+    \eoc
+    =
+    \frac{\log(E_h/E_{h/2})}{\log 2}.
+\end{equation}
+For the stability sweeps, we also use the final-time amplitude
+\begin{equation}
+    \norm{v^N}_\infty=\max_m |v_m^N|.
+\end{equation}
+Since the exact solution in the assignment satisfies $0\le u(x,t)\le1$, a computed
+amplitude much larger than $1$ is clear evidence of numerical instability.
+
+\section{Definition of Local Truncation Error}
+
+The local truncation error is the residual obtained when the exact solution is
+substituted into the finite difference scheme.  For example, if a scheme has the form
+\begin{equation}
+    L_{h,k}v_m^n=0,
+\end{equation}
+then the local truncation error is
+\begin{equation}
+    \tau_m^n=(L_{h,k}u)_m^n,
+\end{equation}
+where $u$ is the exact smooth solution of $u_t+a u_x=0$.  In this handout the schemes
+are written in divided form, so $\tau_m^n$ has the same physical units as
+$u_t+a u_x$.
+
+If
+\begin{equation}
+    \tau_m^n=\Oh(k^p+h^q),
+\end{equation}
+then the method is locally consistent of order $p$ in time and $q$ in space.  For a
+hyperbolic equation it is common to keep the Courant number fixed:
+\begin{equation}
+    k=\lambda h.
+\end{equation}
+Under this scaling,
+\begin{equation}
+    \Oh(k+h)=\Oh(h),\qquad
+    \Oh(k+h^2)=\Oh(h),\qquad
+    \Oh(k^2+h^2)=\Oh(h^2).
+\end{equation}
+This is why schemes with $\Oh(k+h)$ or $\Oh(k+h^2)$ local truncation error are
+first-order methods in the usual refinement study, while schemes with
+$\Oh(k^2+h^2)$ are second-order for smooth solutions.
+
+The local truncation error is not the same as the final-time error.  The final error
+also depends on stability, boundary closures, startup steps, and the regularity of the
+exact solution.  In particular, the assigned initial data has a corner, so the measured
+$E_\infty$ convergence rate can be lower than the formal smooth-solution order.
+
+\section{Taylor Expansions}
+
+The local truncation error calculations below use
+\begin{align}
+    u_m^{n+1}
+    &=u+k u_t+\frac{k^2}{2}u_{tt}+\frac{k^3}{6}u_{ttt}+\Oh(k^4),\\
+    u_m^{n-1}
+    &=u-k u_t+\frac{k^2}{2}u_{tt}-\frac{k^3}{6}u_{ttt}+\Oh(k^4),\\
+    u_{m+1}^n
+    &=u+h u_x+\frac{h^2}{2}u_{xx}+\frac{h^3}{6}u_{xxx}
+    +\frac{h^4}{24}u_{xxxx}+\Oh(h^5),\\
+    u_{m-1}^n
+    &=u-h u_x+\frac{h^2}{2}u_{xx}-\frac{h^3}{6}u_{xxx}
+    +\frac{h^4}{24}u_{xxxx}+\Oh(h^5).
+\end{align}
+The PDE also implies
+\begin{equation}
+    u_t=-a u_x,\qquad u_{tt}=a^2u_{xx},\qquad u_{ttt}=-a^3u_{xxx}.
+\end{equation}
+
+\section{Explicit Schemes}
+
+\subsection{FTFS}
+
+\begin{equation}
+    \frac{v_m^{n+1}-v_m^n}{k}
+    +a\frac{v_{m+1}^n-v_m^n}{h}=0.
+\end{equation}
+Substitution gives
+\begin{align}
+    \tau_m^n
+    &=
+    \left(u_t+\frac{k}{2}u_{tt}+\Oh(k^2)\right)
+    +a\left(u_x+\frac{h}{2}u_{xx}+\Oh(h^2)\right)\\
+    &=
+    \frac{k}{2}u_{tt}+\frac{ah}{2}u_{xx}
+    +\Oh(k^2+h^2),
+\end{align}
+so
+\begin{equation}
+    \tau_m^n=\Oh(k+h).
+\end{equation}
+
+\subsection{FTBS}
+
+\begin{equation}
+    \frac{v_m^{n+1}-v_m^n}{k}
+    +a\frac{v_m^n-v_{m-1}^n}{h}=0.
+\end{equation}
+Since
+\begin{equation}
+    \frac{u_m^n-u_{m-1}^n}{h}
+    =
+    u_x-\frac{h}{2}u_{xx}+\Oh(h^2),
+\end{equation}
+we obtain
+\begin{equation}
+    \tau_m^n
+    =
+    \frac{k}{2}u_{tt}
+    -\frac{ah}{2}u_{xx}
+    +\Oh(k^2+h^2)
+    =
+    \Oh(k+h).
+\end{equation}
+
+\subsection{FTCS}
+
+\begin{equation}
+    \frac{v_m^{n+1}-v_m^n}{k}
+    +a\frac{v_{m+1}^n-v_{m-1}^n}{2h}=0.
+\end{equation}
+The centered derivative satisfies
+\begin{equation}
+    \frac{u_{m+1}^n-u_{m-1}^n}{2h}
+    =
+    u_x+\frac{h^2}{6}u_{xxx}+\Oh(h^4).
+\end{equation}
+Therefore
+\begin{equation}
+    \tau_m^n
+    =
+    \frac{k}{2}u_{tt}
+    +\frac{a h^2}{6}u_{xxx}
+    +\Oh(k^2+h^4)
+    =
+    \Oh(k+h^2).
+\end{equation}
+With $k=\Oh(h)$, FTCS is first-order consistent.
+
+\subsection{CTCS or Leapfrog}
+
+\begin{equation}
+    \frac{v_m^{n+1}-v_m^{n-1}}{2k}
+    +a\frac{v_{m+1}^n-v_{m-1}^n}{2h}=0.
+\end{equation}
+The centered time difference gives
+\begin{equation}
+    \frac{u_m^{n+1}-u_m^{n-1}}{2k}
+    =
+    u_t+\frac{k^2}{6}u_{ttt}+\Oh(k^4).
+\end{equation}
+Hence
+\begin{equation}
+    \tau_m^n
+    =
+    \frac{k^2}{6}u_{ttt}
+    +\frac{a h^2}{6}u_{xxx}
+    +\Oh(k^4+h^4)
+    =
+    \Oh(k^2+h^2).
+\end{equation}
+
+\subsection{Lax--Friedrichs}
+
+\begin{equation}
+    \frac{v_m^{n+1}-\frac12(v_{m+1}^n+v_{m-1}^n)}{k}
+    +a\frac{v_{m+1}^n-v_{m-1}^n}{2h}=0.
+\end{equation}
+Since
+\begin{equation}
+    \frac12(u_{m+1}^n+u_{m-1}^n)
+    =
+    u+\frac{h^2}{2}u_{xx}+\Oh(h^4),
+\end{equation}
+we obtain
+\begin{equation}
+    \tau_m^n
+    =
+    \frac{k}{2}u_{tt}
+    -\frac{h^2}{2k}u_{xx}
+    +\frac{a h^2}{6}u_{xxx}
+    +\Oh(k^2+h^4/k+h^4).
+\end{equation}
+Thus
+\begin{equation}
+    \tau_m^n=\Oh\left(k+\frac{h^2}{k}\right).
+\end{equation}
+For $k=\Oh(h)$ this becomes first order.
+
+\subsection{Lax--Wendroff}
+
+\begin{equation}
+    v_m^{n+1}
+    =
+    v_m^n
+    -\frac{\nu}{2}(v_{m+1}^n-v_{m-1}^n)
+    +\frac{\nu^2}{2}(v_{m+1}^n-2v_m^n+v_{m-1}^n).
+\end{equation}
+Equivalently,
+\begin{equation}
+    \frac{v_m^{n+1}-v_m^n}{k}
+    +aD_0v_m^n-\frac{a^2k}{2}\delta_{xx}v_m^n=0.
+\end{equation}
+Using
+\begin{equation}
+    D_0u=u_x+\frac{h^2}{6}u_{xxx}+\Oh(h^4),
+    \qquad
+    \delta_{xx}u=u_{xx}+\frac{h^2}{12}u_{xxxx}+\Oh(h^4),
+\end{equation}
+we get
+\begin{align}
+    \tau_m^n
+    &=
+    u_t+a u_x
+    +\frac{k}{2}u_{tt}
+    -\frac{a^2k}{2}u_{xx}
+    +\frac{k^2}{6}u_{ttt}
+    +\frac{a h^2}{6}u_{xxx}
+    +\Oh(k^3+kh^2+h^4).
+\end{align}
+The PDE cancels $u_t+a u_x$, and $u_{tt}=a^2u_{xx}$ cancels the order-$k$ term.  Therefore
+\begin{equation}
+    \tau_m^n=\Oh(k^2+h^2).
+\end{equation}
+
+\subsection{Beam--Warming}
+
+For $a>0$,
+\begin{equation}
+    v_m^{n+1}
+    =
+    v_m^n
+    -\frac{\nu}{2}(3v_m^n-4v_{m-1}^n+v_{m-2}^n)
+    +\frac{\nu^2}{2}(v_m^n-2v_{m-1}^n+v_{m-2}^n).
+\end{equation}
+The backward approximations are
+\begin{align}
+    \frac{3u_m-4u_{m-1}+u_{m-2}}{2h}
+    &=
+    u_x-\frac{h^2}{3}u_{xxx}+\Oh(h^3),\\
+    \frac{u_m-2u_{m-1}+u_{m-2}}{h^2}
+    &=
+    u_{xx}-h u_{xxx}+\Oh(h^2).
+\end{align}
+Substitution gives
+\begin{equation}
+    \tau_m^n
+    =
+    u_t+a u_x
+    +\frac{k}{2}u_{tt}
+    -\frac{a^2k}{2}u_{xx}
+    +\Oh(k^2+h^2+kh).
+\end{equation}
+The first two nonzero order-$k$ terms cancel by $u_{tt}=a^2u_{xx}$, so
+\begin{equation}
+    \tau_m^n=\Oh(k^2+h^2)
+\end{equation}
+when $k=\Oh(h)$.
+
+\section{Implicit Schemes}
+
+\subsection{BTFS and BTBS}
+
+BTFS and BTBS are respectively
+\begin{align}
+    \frac{v_m^{n+1}-v_m^n}{k}
+    +a\frac{v_{m+1}^{n+1}-v_m^{n+1}}{h}
+    &=0,\\
+    \frac{v_m^{n+1}-v_m^n}{k}
+    +a\frac{v_m^{n+1}-v_{m-1}^{n+1}}{h}
+    &=0.
+\end{align}
+Expanding around $(x_m,t_{n+1})$,
+\begin{equation}
+    \frac{u_m^{n+1}-u_m^n}{k}
+    =
+    u_t-\frac{k}{2}u_{tt}+\Oh(k^2),
+\end{equation}
+while the forward/backward spatial differences are first-order accurate.  Thus
+\begin{equation}
+    \tau_m^{n+1}=\Oh(k+h).
+\end{equation}
+
+\subsection{BTCS}
+
+\begin{equation}
+    \frac{v_m^{n+1}-v_m^n}{k}
+    +a\frac{v_{m+1}^{n+1}-v_{m-1}^{n+1}}{2h}=0.
+\end{equation}
+The time difference is first-order and the spatial difference is second-order:
+\begin{equation}
+    \tau_m^{n+1}
+    =
+    -\frac{k}{2}u_{tt}
+    +\frac{a h^2}{6}u_{xxx}
+    +\Oh(k^2+h^4)
+    =
+    \Oh(k+h^2).
+\end{equation}
+
+\subsection{Crank--Nicolson}
+
+\begin{equation}
+    \frac{v_m^{n+1}-v_m^n}{k}
+    +
+    \frac{a}{2}
+    \left[
+        \frac{v_{m+1}^{n+1}-v_{m-1}^{n+1}}{2h}
+        +
+        \frac{v_{m+1}^{n}-v_{m-1}^{n}}{2h}
+    \right]=0.
+\end{equation}
+This is trapezoidal in time and centered in space.  Expanding about the midpoint $t_{n+1/2}$ gives
+\begin{equation}
+    \tau_m^{n+1/2}=\Oh(k^2+h^2).
+\end{equation}
+
+\section{Summary}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{@{}lll@{}}
+\toprule
+Scheme & Local truncation error & Order for $k=\Oh(h)$\\
+\midrule
+FTFS & $\Oh(k+h)$ & first\\
+FTBS & $\Oh(k+h)$ & first\\
+FTCS & $\Oh(k+h^2)$ & first\\
+CTCS & $\Oh(k^2+h^2)$ & second\\
+Lax--Friedrichs & $\Oh(k+h^2/k)$ & first\\
+Lax--Wendroff & $\Oh(k^2+h^2)$ & second\\
+Beam--Warming & $\Oh(k^2+h^2)$ & second\\
+BTFS & $\Oh(k+h)$ & first\\
+BTBS & $\Oh(k+h)$ & first\\
+BTCS & $\Oh(k+h^2)$ & first\\
+Crank--Nicolson & $\Oh(k^2+h^2)$ & second\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\end{document}

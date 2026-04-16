@@ -1,0 +1,709 @@
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,mathtools}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{hyperref}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.55em}
+\renewcommand{\arraystretch}{1.18}
+
+\newcommand{\dd}{\,\mathrm{d}}
+\newcommand{\ii}{\mathrm{i}}
+\newcommand{\eoc}{\mathrm{EOC}}
+\newcommand{\Oh}{\mathcal{O}}
+\newcommand{\norm}[1]{\left\lVert #1\right\rVert}
+
+\title{Mathematical Derivation Handout\\
+Finite Difference Methods for the One-Way Wave Equation}
+\author{Rishabh Kumar}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section{Model Problem and Notation}
+
+We consider
+\begin{equation}
+    u_t+a u_x=0,\qquad a>0,
+\end{equation}
+with the assignment value $a=1$.  The numerical grid is
+\begin{equation}
+    x_m=-2+mh,\qquad t_n=nk,\qquad v_m^n\approx u(x_m,t_n),
+\end{equation}
+and the Courant number is
+\begin{equation}
+    \lambda=\frac{k}{h},\qquad \nu=a\lambda=\frac{ak}{h}.
+\end{equation}
+For the present problem $a=1$, hence $\nu=\lambda$.
+
+The exact solution follows from characteristics:
+\begin{equation}
+    \frac{\dd x}{\dd t}=a,\qquad \frac{\dd u}{\dd t}=0.
+\end{equation}
+Thus $x-at$ is constant and
+\begin{equation}
+    u(x,t)=
+    \begin{cases}
+        u_0(x-at), & x-at\ge -2,\\
+        0, & x-at<-2,
+    \end{cases}
+\end{equation}
+where
+\begin{equation}
+    u_0(x)=
+    \begin{cases}
+        (1-|x|)^2, & |x|\le 1,\\
+        0, & |x|>1.
+    \end{cases}
+\end{equation}
+
+\section{Discrete Norms and Experimental Order}
+
+Let $T=t_N$ be the final time of a computation, and define the grid error by
+\begin{equation}
+    e_m^N=v_m^N-u(x_m,T).
+\end{equation}
+The three error measures used in the numerical tables and plots are
+\begin{align}
+    E_1
+    &=
+    h\sum_m |e_m^N|,
+    \\
+    E_2
+    &=
+    \left(h\sum_m |e_m^N|^2\right)^{1/2},
+    \\
+    E_\infty
+    &=
+    \max_m |e_m^N|.
+\end{align}
+Here $E_1$ and $E_2$ approximate integral norms:
+\begin{equation}
+    E_1\approx \norm{e(\cdot,T)}_{L^1},
+    \qquad
+    E_2\approx \norm{e(\cdot,T)}_{L^2}.
+\end{equation}
+The maximum norm $E_\infty$ is a pointwise norm.  It records the largest error at any
+single grid point, and is therefore more sensitive to localized oscillations,
+smearing, or errors near nonsmooth features.
+
+For two successive meshes $h$ and $h/2$, the experimental order of convergence is
+\begin{equation}
+    \eoc
+    =
+    \frac{\log(E_h/E_{h/2})}{\log 2}.
+\end{equation}
+If $E_h\approx C h^p$, then $\eoc\approx p$.
+
+For the $\lambda$-sweep stability plots, we also use the final-time amplitude
+\begin{equation}
+    \norm{v^N}_\infty=\max_m |v_m^N|.
+\end{equation}
+Since the exact transported pulse satisfies $0\le u(x,t)\le1$, very large values of
+$\norm{v^N}_\infty$ are numerical evidence of instability rather than physical growth.
+
+\section{Definition of Local Truncation Error}
+
+The local truncation error is the residual obtained by inserting the exact solution
+into the finite difference scheme.  If a method can be written in divided residual
+form as
+\begin{equation}
+    L_{h,k}v_m^n=0,
+\end{equation}
+then the local truncation error is
+\begin{equation}
+    \tau_m^n=(L_{h,k}u)_m^n,
+\end{equation}
+where $u$ solves the PDE exactly.  Thus $\tau_m^n$ measures how well the finite
+difference equation represents the differential equation at one grid point.
+
+If
+\begin{equation}
+    \tau_m^n=\Oh(k^p+h^q),
+\end{equation}
+the scheme is locally $p$th order in time and $q$th order in space.  For the
+advection problem, convergence studies usually keep
+\begin{equation}
+    \lambda=\frac{k}{h}
+\end{equation}
+fixed, so $k=\lambda h=\Oh(h)$.  Under this hyperbolic scaling,
+\begin{equation}
+    \Oh(k+h)=\Oh(h),\qquad
+    \Oh(k+h^2)=\Oh(h),\qquad
+    \Oh(k^2+h^2)=\Oh(h^2).
+\end{equation}
+
+Local truncation error is a consistency measure, not the final numerical error by
+itself.  A small local residual must be combined with stability to obtain convergence.
+This is why FTCS can be locally consistent but still unstable for pure advection.
+
+\section{Taylor Expansions Used for Local Truncation Error}
+
+The local truncation error is obtained by substituting the exact solution into a finite difference scheme.  The following expansions are repeatedly used:
+\begin{align}
+    u(x_m,t_n+k)
+    &=u+k u_t+\frac{k^2}{2}u_{tt}+\frac{k^3}{6}u_{ttt}+\Oh(k^4),\\
+    u(x_m,t_n-k)
+    &=u-k u_t+\frac{k^2}{2}u_{tt}-\frac{k^3}{6}u_{ttt}+\Oh(k^4),\\
+    u(x_m+h,t_n)
+    &=u+h u_x+\frac{h^2}{2}u_{xx}+\frac{h^3}{6}u_{xxx}+\Oh(h^4),\\
+    u(x_m-h,t_n)
+    &=u-h u_x+\frac{h^2}{2}u_{xx}-\frac{h^3}{6}u_{xxx}+\Oh(h^4).
+\end{align}
+All derivatives above are evaluated at $(x_m,t_n)$ unless otherwise stated.
+
+The PDE gives useful derivative identities:
+\begin{equation}
+    u_t=-a u_x,\qquad
+    u_{tt}=a^2u_{xx},\qquad
+    u_{ttt}=-a^3u_{xxx}.
+\end{equation}
+
+\section{Local Truncation Error: Explicit Schemes}
+
+\subsection{FTFS}
+
+The FTFS scheme is
+\begin{equation}
+    \frac{v_m^{n+1}-v_m^n}{k}
+    +a\frac{v_{m+1}^n-v_m^n}{h}=0.
+\end{equation}
+Substituting the exact solution gives
+\begin{align}
+    \tau_m^n
+    &=
+    \left(u_t+\frac{k}{2}u_{tt}+\Oh(k^2)\right)
+    +a\left(u_x+\frac{h}{2}u_{xx}+\Oh(h^2)\right)\\
+    &=u_t+a u_x+\frac{k}{2}u_{tt}+\frac{ah}{2}u_{xx}
+    +\Oh(k^2+h^2).
+\end{align}
+Since $u_t+a u_x=0$,
+\begin{equation}
+    \tau_m^n
+    =
+    \frac{k}{2}u_{tt}+\frac{ah}{2}u_{xx}
+    +\Oh(k^2+h^2)
+    =\Oh(k+h).
+\end{equation}
+Thus FTFS is formally first-order accurate when $k=\Oh(h)$.
+
+\subsection{FTBS}
+
+The FTBS scheme is
+\begin{equation}
+    \frac{v_m^{n+1}-v_m^n}{k}
+    +a\frac{v_m^n-v_{m-1}^n}{h}=0.
+\end{equation}
+The backward spatial difference satisfies
+\begin{equation}
+    \frac{u(x_m,t_n)-u(x_m-h,t_n)}{h}
+    =
+    u_x-\frac{h}{2}u_{xx}+\Oh(h^2).
+\end{equation}
+Therefore
+\begin{align}
+    \tau_m^n
+    &=
+    u_t+a u_x+\frac{k}{2}u_{tt}
+    -\frac{ah}{2}u_{xx}
+    +\Oh(k^2+h^2)\\
+    &=
+    \frac{k}{2}u_{tt}
+    -\frac{ah}{2}u_{xx}
+    +\Oh(k^2+h^2)
+    =\Oh(k+h).
+\end{align}
+FTBS is also first-order accurate.  For $a>0$ it is the correct upwind direction.
+
+\subsection{FTCS}
+
+The FTCS scheme is
+\begin{equation}
+    \frac{v_m^{n+1}-v_m^n}{k}
+    +a\frac{v_{m+1}^n-v_{m-1}^n}{2h}=0.
+\end{equation}
+The centered spatial difference is
+\begin{equation}
+    \frac{u(x_m+h,t_n)-u(x_m-h,t_n)}{2h}
+    =
+    u_x+\frac{h^2}{6}u_{xxx}+\Oh(h^4).
+\end{equation}
+Hence
+\begin{equation}
+    \tau_m^n
+    =
+    \frac{k}{2}u_{tt}
+    +\frac{a h^2}{6}u_{xxx}
+    +\Oh(k^2+h^4)
+    =
+    \Oh(k+h^2).
+\end{equation}
+For the usual hyperbolic scaling $k=\Oh(h)$, FTCS is first-order consistent.
+
+\subsection{CTCS or Leapfrog}
+
+The CTCS scheme is
+\begin{equation}
+    \frac{v_m^{n+1}-v_m^{n-1}}{2k}
+    +a\frac{v_{m+1}^n-v_{m-1}^n}{2h}=0.
+\end{equation}
+The centered time difference gives
+\begin{equation}
+    \frac{u(x_m,t_n+k)-u(x_m,t_n-k)}{2k}
+    =
+    u_t+\frac{k^2}{6}u_{ttt}+\Oh(k^4).
+\end{equation}
+Therefore
+\begin{equation}
+    \tau_m^n
+    =
+    \frac{k^2}{6}u_{ttt}
+    +\frac{a h^2}{6}u_{xxx}
+    +\Oh(k^4+h^4)
+    =
+    \Oh(k^2+h^2).
+\end{equation}
+CTCS is second-order accurate for smooth solutions.
+
+\subsection{Lax--Friedrichs}
+
+The Lax--Friedrichs scheme can be written as
+\begin{equation}
+    \frac{v_m^{n+1}-\frac12(v_{m+1}^n+v_{m-1}^n)}{k}
+    +a\frac{v_{m+1}^n-v_{m-1}^n}{2h}=0.
+\end{equation}
+The spatial averaging term satisfies
+\begin{equation}
+    \frac12\left(u(x_m+h,t_n)+u(x_m-h,t_n)\right)
+    =
+    u+\frac{h^2}{2}u_{xx}+\Oh(h^4).
+\end{equation}
+Thus
+\begin{align}
+    \frac{u(x_m,t_n+k)-\frac12(u(x_m+h,t_n)+u(x_m-h,t_n))}{k}
+    &=
+    u_t+\frac{k}{2}u_{tt}
+    -\frac{h^2}{2k}u_{xx}
+    +\Oh(k^2+h^4/k).
+\end{align}
+Combining this with the centered spatial derivative,
+\begin{equation}
+    \tau_m^n
+    =
+    \frac{k}{2}u_{tt}
+    -\frac{h^2}{2k}u_{xx}
+    +\frac{a h^2}{6}u_{xxx}
+    +\Oh(k^2+h^4/k+h^4).
+\end{equation}
+Therefore
+\begin{equation}
+    \tau_m^n=\Oh\left(k+\frac{h^2}{k}\right).
+\end{equation}
+Under $k=\Oh(h)$, Lax--Friedrichs is first-order accurate.
+
+\subsection{Lax--Wendroff}
+
+The Lax--Wendroff method is
+\begin{equation}
+    v_m^{n+1}
+    =
+    v_m^n
+    -\frac{\nu}{2}(v_{m+1}^n-v_{m-1}^n)
+    +\frac{\nu^2}{2}(v_{m+1}^n-2v_m^n+v_{m-1}^n).
+\end{equation}
+Equivalently,
+\begin{equation}
+    \frac{v_m^{n+1}-v_m^n}{k}
+    +a\frac{v_{m+1}^n-v_{m-1}^n}{2h}
+    -\frac{a^2k}{2}\frac{v_{m+1}^n-2v_m^n+v_{m-1}^n}{h^2}=0.
+\end{equation}
+Using
+\begin{equation}
+    \frac{u(x_m+h)-2u(x_m)+u(x_m-h)}{h^2}
+    =
+    u_{xx}+\frac{h^2}{12}u_{xxxx}+\Oh(h^4),
+\end{equation}
+we obtain
+\begin{align}
+    \tau_m^n
+    &=
+    u_t+a u_x
+    +\frac{k}{2}u_{tt}
+    -\frac{a^2k}{2}u_{xx}
+    +\frac{k^2}{6}u_{ttt}
+    +\frac{a h^2}{6}u_{xxx}
+    +\Oh(k^3+kh^2+h^4).
+\end{align}
+The terms $u_t+a u_x$ vanish by the PDE, and
+$u_{tt}=a^2u_{xx}$ cancels the order-$k$ term.  Hence
+\begin{equation}
+    \tau_m^n=\Oh(k^2+h^2).
+\end{equation}
+
+\subsection{Beam--Warming}
+
+For $a>0$, the Beam--Warming method uses a second-order backward stencil:
+\begin{equation}
+    v_m^{n+1}
+    =
+    v_m^n
+    -\frac{\nu}{2}(3v_m^n-4v_{m-1}^n+v_{m-2}^n)
+    +\frac{\nu^2}{2}(v_m^n-2v_{m-1}^n+v_{m-2}^n).
+\end{equation}
+The needed backward approximations are
+\begin{align}
+    \frac{3u_m-4u_{m-1}+u_{m-2}}{2h}
+    &=
+    u_x-\frac{h^2}{3}u_{xxx}+\Oh(h^3),\\
+    \frac{u_m-2u_{m-1}+u_{m-2}}{h^2}
+    &=
+    u_{xx}-h u_{xxx}+\Oh(h^2).
+\end{align}
+Substitution gives
+\begin{align}
+    \tau_m^n
+    &=
+    u_t+a u_x
+    +\frac{k}{2}u_{tt}
+    -\frac{a^2k}{2}u_{xx}
+    +\Oh(k^2+h^2+kh).
+\end{align}
+Again $u_t+a u_x=0$ and $u_{tt}=a^2u_{xx}$, so
+\begin{equation}
+    \tau_m^n=\Oh(k^2+h^2)
+\end{equation}
+under the hyperbolic scaling $k=\Oh(h)$.
+
+\section{Local Truncation Error: Implicit Schemes}
+
+\subsection{BTFS and BTBS}
+
+BTFS is
+\begin{equation}
+    \frac{v_m^{n+1}-v_m^n}{k}
+    +a\frac{v_{m+1}^{n+1}-v_m^{n+1}}{h}=0,
+\end{equation}
+while BTBS is
+\begin{equation}
+    \frac{v_m^{n+1}-v_m^n}{k}
+    +a\frac{v_m^{n+1}-v_{m-1}^{n+1}}{h}=0.
+\end{equation}
+Expanding around $(x_m,t_{n+1})$,
+\begin{equation}
+    \frac{u(x_m,t_{n+1})-u(x_m,t_n)}{k}
+    =
+    u_t-\frac{k}{2}u_{tt}+\Oh(k^2).
+\end{equation}
+The forward and backward spatial differences are first-order accurate.  Therefore
+\begin{equation}
+    \tau_m^{n+1}=\Oh(k+h)
+\end{equation}
+for both BTFS and BTBS.
+
+\subsection{BTCS}
+
+BTCS uses a backward time difference and a centered spatial difference at the new time:
+\begin{equation}
+    \frac{v_m^{n+1}-v_m^n}{k}
+    +a\frac{v_{m+1}^{n+1}-v_{m-1}^{n+1}}{2h}=0.
+\end{equation}
+Thus
+\begin{equation}
+    \tau_m^{n+1}
+    =
+    -\frac{k}{2}u_{tt}
+    +\frac{a h^2}{6}u_{xxx}
+    +\Oh(k^2+h^4)
+    =
+    \Oh(k+h^2).
+\end{equation}
+With $k=\Oh(h)$, BTCS is first-order accurate.
+
+\subsection{Crank--Nicolson}
+
+The Crank--Nicolson method is
+\begin{equation}
+    \frac{v_m^{n+1}-v_m^n}{k}
+    +\frac{a}{2}
+    \left[
+        \frac{v_{m+1}^{n+1}-v_{m-1}^{n+1}}{2h}
+        +
+        \frac{v_{m+1}^{n}-v_{m-1}^{n}}{2h}
+    \right]=0.
+\end{equation}
+This is the trapezoidal rule in time applied to the centered spatial derivative.  Expanding about the midpoint $t_{n+1/2}$ gives second-order time accuracy, while the centered spatial derivative is second-order in $h$. Hence
+\begin{equation}
+    \tau_m^{n+1/2}=\Oh(k^2+h^2).
+\end{equation}
+
+\section{Von Neumann Stability: Explicit Schemes}
+
+For stability, insert the Fourier mode
+\begin{equation}
+    v_m^n=G^n e^{\ii m\theta}.
+\end{equation}
+A scheme is stable in the von Neumann sense if $|G(\theta)|\le 1$ for every wave number $\theta$.
+
+\subsection{FTFS}
+
+FTFS gives
+\begin{equation}
+    G=1-\nu(e^{\ii\theta}-1)=1+\nu-\nu e^{\ii\theta}.
+\end{equation}
+Therefore
+\begin{align}
+    |G|^2
+    &=
+    (1+\nu-\nu\cos\theta)^2+\nu^2\sin^2\theta\\
+    &=
+    1+2\nu(1+\nu)(1-\cos\theta).
+\end{align}
+For $\nu>0$ and $\theta\ne 0$, $|G|>1$.  Thus FTFS is unstable for right-moving advection.
+
+\subsection{FTBS}
+
+FTBS gives
+\begin{equation}
+    G=1-\nu(1-e^{-\ii\theta})
+    =
+    1-\nu+\nu e^{-\ii\theta}.
+\end{equation}
+Hence
+\begin{align}
+    |G|^2
+    &=
+    (1-\nu+\nu\cos\theta)^2+\nu^2\sin^2\theta\\
+    &=
+    1-2\nu(1-\nu)(1-\cos\theta).
+\end{align}
+Thus $|G|\le 1$ for all $\theta$ precisely when
+\begin{equation}
+    0\le \nu\le 1.
+\end{equation}
+
+\subsection{FTCS}
+
+FTCS gives
+\begin{equation}
+    G=1-\frac{\nu}{2}(e^{\ii\theta}-e^{-\ii\theta})
+    =
+    1-\ii\nu\sin\theta.
+\end{equation}
+Thus
+\begin{equation}
+    |G|^2=1+\nu^2\sin^2\theta.
+\end{equation}
+For any nonzero $\nu$ and any mode with $\sin\theta\ne0$, $|G|>1$.  FTCS is therefore unstable for pure advection.
+
+\subsection{Lax--Friedrichs}
+
+For Lax--Friedrichs,
+\begin{equation}
+    G=\frac12(e^{\ii\theta}+e^{-\ii\theta})
+    -\frac{\nu}{2}(e^{\ii\theta}-e^{-\ii\theta})
+    =
+    \cos\theta-\ii\nu\sin\theta.
+\end{equation}
+Consequently
+\begin{equation}
+    |G|^2=\cos^2\theta+\nu^2\sin^2\theta
+    =
+    1-(1-\nu^2)\sin^2\theta.
+\end{equation}
+The condition $|G|\le1$ for all $\theta$ is
+\begin{equation}
+    |\nu|\le1.
+\end{equation}
+
+\subsection{Lax--Wendroff}
+
+The Lax--Wendroff amplification factor is
+\begin{equation}
+    G
+    =
+    1-\ii\nu\sin\theta+\nu^2(\cos\theta-1).
+\end{equation}
+Let $s=\sin(\theta/2)$.  Then
+\begin{equation}
+    \cos\theta-1=-2s^2,\qquad
+    \sin^2\theta=4s^2(1-s^2).
+\end{equation}
+Therefore
+\begin{align}
+    |G|^2
+    &=
+    (1-2\nu^2s^2)^2+4\nu^2s^2(1-s^2)\\
+    &=
+    1-4\nu^2(1-\nu^2)s^4.
+\end{align}
+Thus $|G|\le1$ for all $\theta$ if and only if
+\begin{equation}
+    |\nu|\le1.
+\end{equation}
+
+\subsection{Beam--Warming}
+
+Let $q=e^{-\ii\theta}$.  Beam--Warming gives
+\begin{equation}
+    G=
+    1-\frac{\nu}{2}(3-4q+q^2)
+    +\frac{\nu^2}{2}(1-2q+q^2).
+\end{equation}
+Set $\delta=1-q$.  Since
+\begin{equation}
+    3-4q+q^2=2\delta+\delta^2,\qquad
+    1-2q+q^2=\delta^2,
+\end{equation}
+we can write
+\begin{equation}
+    G=1-\nu\delta+\frac{\nu(\nu-1)}{2}\delta^2.
+\end{equation}
+Using
+\begin{equation}
+    \delta+\overline{\delta}=|\delta|^2=4\sin^2(\theta/2),
+\end{equation}
+one obtains after simplification
+\begin{equation}
+    |G|^2
+    =
+    1-4\nu(2-\nu)(1-\nu)^2\sin^4(\theta/2).
+\end{equation}
+Hence
+\begin{equation}
+    |G|\le1 \quad\text{for all }\theta
+    \qquad\Longleftrightarrow\qquad
+    0\le\nu\le2.
+\end{equation}
+
+\subsection{CTCS}
+
+CTCS gives
+\begin{equation}
+    G-G^{-1}=-\nu(e^{\ii\theta}-e^{-\ii\theta})
+    =
+    -2\ii\nu\sin\theta.
+\end{equation}
+Multiplying by $G$,
+\begin{equation}
+    G^2+2\ii\nu\sin\theta\,G-1=0.
+\end{equation}
+The roots are
+\begin{equation}
+    G=-\ii\nu\sin\theta
+    \pm\sqrt{1-\nu^2\sin^2\theta}.
+\end{equation}
+For the roots to remain on the unit circle for all $\theta$, the square root must be real for all $\theta$, which requires
+\begin{equation}
+    |\nu|\le1.
+\end{equation}
+This is the CFL condition for CTCS.  The method also supports a computational mode, which is why a stable one-step startup is needed.
+
+\section{Von Neumann Stability: Implicit Schemes}
+
+\subsection{BTFS}
+
+BTFS gives
+\begin{equation}
+    G\left[1+\nu(e^{\ii\theta}-1)\right]=1,
+\end{equation}
+so
+\begin{equation}
+    G=\frac{1}{1-\nu+\nu e^{\ii\theta}}.
+\end{equation}
+The denominator has modulus squared
+\begin{equation}
+    |1-\nu+\nu e^{\ii\theta}|^2
+    =
+    1-2\nu(1-\nu)(1-\cos\theta).
+\end{equation}
+For $0<\nu<1$, this can be less than $1$, so $|G|>1$ for some modes.  For $\nu\ge1$, the denominator modulus is at least $1$.  Thus BTFS is not the natural implicit upwind method for $a>0$ when $0<\nu<1$.
+
+\subsection{BTBS}
+
+BTBS gives
+\begin{equation}
+    G\left[1+\nu-\nu e^{-\ii\theta}\right]=1,
+\end{equation}
+so
+\begin{equation}
+    G=\frac{1}{1+\nu-\nu e^{-\ii\theta}}.
+\end{equation}
+The denominator satisfies
+\begin{equation}
+    |1+\nu-\nu e^{-\ii\theta}|^2
+    =
+    1+2\nu(1+\nu)(1-\cos\theta)\ge1.
+\end{equation}
+Therefore
+\begin{equation}
+    |G|\le1\qquad \text{for all }\nu\ge0.
+\end{equation}
+BTBS is unconditionally stable for right-moving advection, but it is diffusive.
+
+\subsection{BTCS}
+
+BTCS gives
+\begin{equation}
+    G\left[1+\frac{\nu}{2}(e^{\ii\theta}-e^{-\ii\theta})\right]=1.
+\end{equation}
+Thus
+\begin{equation}
+    G=\frac{1}{1+\ii\nu\sin\theta},
+\end{equation}
+and
+\begin{equation}
+    |G|^2=\frac{1}{1+\nu^2\sin^2\theta}\le1.
+\end{equation}
+So BTCS is unconditionally stable in the von Neumann sense.
+
+\subsection{Crank--Nicolson}
+
+Crank--Nicolson gives
+\begin{equation}
+    G\left[1+\frac{\ii\nu}{2}\sin\theta\right]
+    =
+    1-\frac{\ii\nu}{2}\sin\theta.
+\end{equation}
+Therefore
+\begin{equation}
+    G=
+    \frac{1-\frac{\ii\nu}{2}\sin\theta}
+         {1+\frac{\ii\nu}{2}\sin\theta}.
+\end{equation}
+The numerator and denominator are complex conjugates, so
+\begin{equation}
+    |G|=1.
+\end{equation}
+Crank--Nicolson is neutrally stable for every $\nu$.  This means it does not damp Fourier modes, which is useful for amplitude preservation but can also preserve dispersive oscillations near nonsmooth data.
+
+\section{Summary of Orders and Stability}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{@{}lll@{}}
+\toprule
+Scheme & Formal order for $k=\Oh(h)$ & Stability for $a>0$\\
+\midrule
+FTFS & first & unstable\\
+FTBS & first & $0\le\nu\le1$\\
+FTCS & first & unstable\\
+CTCS & second & $|\nu|\le1$\\
+Lax--Friedrichs & first & $|\nu|\le1$\\
+Lax--Wendroff & second & $|\nu|\le1$\\
+Beam--Warming & second & $0\le\nu\le2$\\
+BTFS & first & stable for $\nu\ge1$ on a periodic grid\\
+BTBS & first & all $\nu\ge0$\\
+BTCS & first & all $\nu$\\
+Crank--Nicolson & second & all $\nu$, neutrally stable\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The formal orders assume a smooth exact solution.  The assigned initial data has a corner at $x=0$, so the observed global convergence rates, especially in $E_\infty$, are lower than the smooth-solution stencil orders.  This explains why the numerical convergence plots show clear improvement under refinement but do not always display the full formal order.
+
+\end{document}
